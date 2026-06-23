@@ -15,6 +15,9 @@ export default defineConfig({
     plugins: [tailwindcss()],
     ...(!isStatic ? {
       server: {
+        watch: {
+          ignored: ["**/public/data/**"],
+        },
         proxy: {
           "/api": {
             target: "http://localhost:8000",

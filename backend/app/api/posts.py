@@ -120,6 +120,8 @@ def update_post(slug: str, data: PostIn, session: Session = Depends(get_session)
     post.body = data.body
     post.related_event_urls = json.dumps(data.related_event_urls)
     post.updated_at = datetime.now(timezone.utc)
+    if data.created_at:
+        post.created_at = data.created_at
     if data.slug and data.slug != slug:
         post.slug = data.slug
     session.add(post)
