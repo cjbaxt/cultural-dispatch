@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchPosts } from "../lib/api";
+import { fetchPosts, deletePost } from "../lib/api";
 import { isEditor } from "../lib/editor";
 import { url } from "../lib/base";
 import type { Post } from "../types/post";
@@ -56,12 +56,28 @@ export default function PostList() {
             <p className="text-xs text-neutral-300 mt-3">{formatDate(post.created_at)}</p>
           </a>
           {editor && (
-            <a
-              href={url(`/edit?slug=${post.slug}`)}
-              className="inline-block mt-2 text-xs text-neutral-300 hover:text-neutral-600 transition-colors"
-            >
-              Edit
-            </a>
+            <div className="flex items-center gap-3 mt-2">
+              <a
+                href={url(`/edit?slug=${post.slug}`)}
+                className="text-xs text-neutral-300 hover:text-neutral-600 transition-colors"
+              >
+                Edit
+              </a>
+              {post.status === "draft" && (
+                <button
+                  type="button"
+                  onClick={async e => {
+                    e.preventDefault();
+                    if (!window.confirm(`Delete "${post.title}"?`)) return;
+                    await deletePost(post.slug);
+                    setPosts(prev => prev.filter(p => p.slug !== post.slug));
+                  }}
+                  className="text-xs text-neutral-300 hover:text-red-400 transition-colors cursor-pointer"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
           )}
         </li>
       ))}

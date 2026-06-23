@@ -3,7 +3,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
-import { createPost, updatePost } from "../lib/api";
+import { createPost, updatePost, deletePost } from "../lib/api";
 import { url } from "../lib/base";
 import { fetchLedgerEvents } from "../lib/ledger";
 import type { LedgerEvent } from "../lib/ledger";
@@ -185,6 +185,17 @@ export default function PostEditor({ post }: Props) {
     }
   }, [title, type, status, excerpt, relatedUrls, editor, isEdit, post]);
 
+  const handleDelete = useCallback(async () => {
+    if (!isEdit || status === "published") return;
+    if (!window.confirm(`Delete "${title}"?`)) return;
+    try {
+      await deletePost(post.slug);
+      window.location.href = url("/");
+    } catch (e: any) {
+      setError(e.message ?? "Delete failed.");
+    }
+  }, [isEdit, status, title, post]);
+
   return (
     <div className="space-y-6">
       {/* Title */}
@@ -214,6 +225,15 @@ export default function PostEditor({ post }: Props) {
             </button>
           ))}
         </div>
+        {isEdit && status === "draft" && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="text-xs text-neutral-300 hover:text-red-400 transition-colors cursor-pointer"
+          >
+            Delete draft
+          </button>
+        )}
         <div className="flex gap-3 ml-auto items-center">
           {autoSaveStatus === "saving" && (
             <span className="text-xs text-neutral-400">Saving…</span>
@@ -237,14 +257,14 @@ export default function PostEditor({ post }: Props) {
 
       {error && <p className="text-sm text-red-400">{error}</p>}
 
-      {/* Excerpt */}
+      {/* Subtitle */}
       <div>
-        <label className="block text-xs uppercase tracking-widest text-neutral-400 mb-1.5">Excerpt</label>
+        <label className="block text-xs uppercase tracking-widest text-neutral-400 mb-1.5">Subtitle</label>
         <textarea
           value={excerpt}
           onChange={e => setExcerpt(e.target.value)}
           rows={2}
-          placeholder="Short summary shown in the post list…"
+          placeholder="Shown below the title…"
           className="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-neutral-400 transition-colors resize-none placeholder-neutral-300"
         />
       </div>
