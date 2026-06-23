@@ -5,6 +5,8 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { createPost, updatePost } from "../lib/api";
 import { url } from "../lib/base";
+import { fetchLedgerEvents } from "../lib/ledger";
+import type { LedgerEvent } from "../lib/ledger";
 import type { Post } from "../types/post";
 
 type AutoSaveStatus = "idle" | "saving" | "saved" | "error";
@@ -52,7 +54,13 @@ export default function PostEditor({ post }: Props) {
   const [status, setStatus] = useState<"draft" | "published">(post?.status ?? "draft");
   const [excerpt, setExcerpt] = useState(post?.excerpt ?? "");
   const [relatedUrls, setRelatedUrls] = useState<string[]>(post?.related_event_urls ?? []);
-  const [urlInput, setUrlInput] = useState("");
+  const [eventSearch, setEventSearch] = useState("");
+  const [ledgerEvents, setLedgerEvents] = useState<LedgerEvent[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    fetchLedgerEvents().then(setLedgerEvents).catch(() => {});
+  }, []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveStatus>("idle");
@@ -77,17 +85,24 @@ export default function PostEditor({ post }: Props) {
     onUpdate: () => scheduleAutosave(),
   });
 
-  function addUrl() {
-    const trimmed = urlInput.trim();
-    if (trimmed && !relatedUrls.includes(trimmed)) {
-      setRelatedUrls(prev => [...prev, trimmed]);
+  function addEvent(id: string) {
+    if (!relatedUrls.includes(id)) {
+      setRelatedUrls(prev => [...prev, id]);
     }
-    setUrlInput("");
+    setEventSearch("");
+    setShowSuggestions(false);
   }
 
   function removeUrl(u: string) {
     setRelatedUrls(prev => prev.filter(x => x !== u));
   }
+
+  const suggestions = eventSearch.length > 1
+    ? ledgerEvents.filter(e =>
+        e.title.toLowerCase().includes(eventSearch.toLowerCase()) ||
+        e.venue_name.toLowerCase().includes(eventSearch.toLowerCase())
+      ).slice(0, 6)
+    : [];
 
   // Use refs so the autosave closure always sees current values without re-registering
   const titleRef = useRef(title);
@@ -287,42 +302,54 @@ export default function PostEditor({ post }: Props) {
         )}
       </div>
 
-      {/* Related event URLs */}
+      {/* Related events */}
       <div>
         <label className="block text-xs uppercase tracking-widest text-neutral-400 mb-1.5">Related events</label>
-        <div className="flex gap-2 mb-2">
+        <div className="relative mb-2">
           <input
-            type="url"
-            value={urlInput}
-            onChange={e => setUrlInput(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addUrl(); } }}
-            placeholder="https://cjbaxt.github.io/events-ledger/…"
-            className="flex-1 text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-neutral-400 transition-colors placeholder-neutral-300"
+            type="text"
+            value={eventSearch}
+            onChange={e => { setEventSearch(e.target.value); setShowSuggestions(true); }}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+            placeholder="Search your ledger…"
+            className="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-neutral-400 transition-colors placeholder-neutral-300"
           />
-          <button
-            type="button"
-            onClick={addUrl}
-            disabled={!urlInput.trim()}
-            className="px-4 py-2 text-sm border border-neutral-200 rounded-lg hover:border-neutral-400 transition-colors disabled:opacity-40 cursor-pointer"
-          >
-            Add
-          </button>
+          {showSuggestions && suggestions.length > 0 && (
+            <ul className="absolute z-10 w-full mt-1 bg-white border border-neutral-200 rounded-lg shadow-sm overflow-hidden">
+              {suggestions.map(e => (
+                <li key={e.id}>
+                  <button
+                    type="button"
+                    onMouseDown={() => addEvent(e.id)}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-50 transition-colors"
+                  >
+                    <span className="text-neutral-800">{e.title}</span>
+                    <span className="text-neutral-400 ml-2 text-xs">{e.venue_name} · {new Date(e.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         {relatedUrls.length > 0 && (
-          <ul className="space-y-1">
-            {relatedUrls.map(u => (
-              <li key={u} className="flex items-center gap-2 text-sm">
-                <span className="flex-1 text-neutral-600 truncate">{u}</span>
-                <button
-                  type="button"
-                  onClick={() => removeUrl(u)}
-                  className="text-neutral-300 hover:text-neutral-600 transition-colors cursor-pointer"
-                  title="Remove"
-                >
-                  ×
-                </button>
-              </li>
-            ))}
+          <ul className="flex flex-wrap gap-2">
+            {relatedUrls.map(id => {
+              const event = ledgerEvents.find(e => e.id === id);
+              return (
+                <li key={id} className="flex items-center gap-1.5 text-xs bg-neutral-100 rounded-full px-3 py-1">
+                  <span className="text-neutral-700">{event ? event.title : id}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeUrl(id)}
+                    className="text-neutral-400 hover:text-neutral-700 transition-colors cursor-pointer"
+                    title="Remove"
+                  >
+                    ×
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
