@@ -29,6 +29,7 @@ class PostIn(BaseModel):
     body: str = ""
     related_event_urls: list[str] = []
     slug: Optional[str] = None
+    created_at: Optional[datetime] = None
 
 
 class PostOut(BaseModel):
@@ -81,6 +82,7 @@ def create_post(data: PostIn, session: Session = Depends(get_session)):
     existing = session.exec(select(Post).where(Post.slug == slug)).first()
     if existing:
         slug = f"{slug}-{int(datetime.now(timezone.utc).timestamp())}"
+    now = datetime.now(timezone.utc)
     post = Post(
         slug=slug,
         title=data.title,
@@ -89,6 +91,8 @@ def create_post(data: PostIn, session: Session = Depends(get_session)):
         excerpt=data.excerpt,
         body=data.body,
         related_event_urls=json.dumps(data.related_event_urls),
+        created_at=data.created_at or now,
+        updated_at=data.created_at or now,
     )
     session.add(post)
     session.commit()

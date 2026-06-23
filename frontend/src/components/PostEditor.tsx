@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -6,6 +6,8 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { createPost, updatePost } from "../lib/api";
 import { url } from "../lib/base";
 import type { Post } from "../types/post";
+
+type AutoSaveStatus = "idle" | "saving" | "saved" | "error";
 
 interface Props {
   post?: Post;
@@ -53,6 +55,12 @@ export default function PostEditor({ post }: Props) {
   const [urlInput, setUrlInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveStatus>("idle");
+
+  // Tracks the slug once a new post has been created, so autosave can PATCH thereafter
+  const savedSlugRef = useRef<string | null>(post?.slug ?? null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -66,6 +74,7 @@ export default function PostEditor({ post }: Props) {
         class: "tiptap-body min-h-[300px] focus:outline-none",
       },
     },
+    onUpdate: () => scheduleAutosave(),
   });
 
   function addUrl() {
@@ -79,6 +88,56 @@ export default function PostEditor({ post }: Props) {
   function removeUrl(u: string) {
     setRelatedUrls(prev => prev.filter(x => x !== u));
   }
+
+  // Use refs so the autosave closure always sees current values without re-registering
+  const titleRef = useRef(title);
+  const typeRef = useRef(type);
+  const statusRef = useRef(status);
+  const excerptRef = useRef(excerpt);
+  const relatedUrlsRef = useRef(relatedUrls);
+  useEffect(() => { titleRef.current = title; }, [title]);
+  useEffect(() => { typeRef.current = type; }, [type]);
+  useEffect(() => { statusRef.current = status; }, [status]);
+  useEffect(() => { excerptRef.current = excerpt; }, [excerpt]);
+  useEffect(() => { relatedUrlsRef.current = relatedUrls; }, [relatedUrls]);
+
+  const scheduleAutosave = useCallback(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      const currentTitle = titleRef.current.trim();
+      if (!currentTitle) return;
+
+      setAutoSaveStatus("saving");
+      const data = {
+        title: currentTitle,
+        type: typeRef.current,
+        status: statusRef.current,
+        excerpt: excerptRef.current.trim() || null,
+        body: editor?.getHTML() ?? "",
+        related_event_urls: relatedUrlsRef.current,
+        slug: savedSlugRef.current ?? slugify(currentTitle),
+      };
+
+      try {
+        if (savedSlugRef.current) {
+          await updatePost(savedSlugRef.current, data);
+        } else {
+          const created = await createPost({ ...data, status: "draft" });
+          savedSlugRef.current = created.slug;
+          // Update URL so a refresh opens the edit page, not a blank /add
+          window.history.replaceState({}, "", url(`/edit?slug=${created.slug}`));
+        }
+        setAutoSaveStatus("saved");
+        if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+        savedTimerRef.current = setTimeout(() => setAutoSaveStatus("idle"), 2000);
+      } catch {
+        setAutoSaveStatus("error");
+      }
+    }, 2000);
+  }, [editor]);
+
+  // Trigger autosave when fields change
+  useEffect(() => { scheduleAutosave(); }, [title, type, excerpt, relatedUrls]);
 
   const handleSave = useCallback(async (targetStatus?: "draft" | "published") => {
     if (!title.trim()) { setError("Title is required."); return; }
@@ -140,15 +199,16 @@ export default function PostEditor({ post }: Props) {
             </button>
           ))}
         </div>
-        <div className="flex gap-2 ml-auto">
-          <button
-            type="button"
-            onClick={() => handleSave("draft")}
-            disabled={saving}
-            className="px-4 py-1.5 text-sm border border-neutral-200 rounded-lg hover:border-neutral-400 transition-colors disabled:opacity-40 cursor-pointer"
-          >
-            Save draft
-          </button>
+        <div className="flex gap-3 ml-auto items-center">
+          {autoSaveStatus === "saving" && (
+            <span className="text-xs text-neutral-400">Saving…</span>
+          )}
+          {autoSaveStatus === "saved" && (
+            <span className="text-xs text-neutral-400">Saved</span>
+          )}
+          {autoSaveStatus === "error" && (
+            <span className="text-xs text-red-400">Autosave failed</span>
+          )}
           <button
             type="button"
             onClick={() => handleSave("published")}

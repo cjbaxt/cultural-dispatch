@@ -23,18 +23,83 @@
 
 /* Tiptap editor prose styles */
 .tiptap-body {
-  @apply text-neutral-800 leading-relaxed;
+  @apply text-sm text-neutral-700 leading-relaxed;
 }
 
-.tiptap-body p { @apply mb-4; }
-.tiptap-body h2 { @apply font-serif text-xl font-medium mt-8 mb-3; }
-.tiptap-body h3 { @apply font-serif text-lg font-medium mt-6 mb-2; }
+.tiptap-body p { @apply mb-5; }
+.tiptap-body h2 { @apply font-serif text-xl font-medium mt-8 mb-3 text-neutral-900; }
+.tiptap-body h3 { @apply font-serif text-lg font-medium mt-6 mb-2 text-neutral-900; }
 .tiptap-body ul { @apply list-disc pl-5 mb-4 space-y-1; }
 .tiptap-body ol { @apply list-decimal pl-5 mb-4 space-y-1; }
 .tiptap-body blockquote { @apply border-l-2 border-neutral-300 pl-4 text-neutral-500 italic my-4; }
 .tiptap-body a { @apply underline underline-offset-2 hover:text-neutral-500; }
 .tiptap-body strong { @apply font-semibold; }
 .tiptap-body em { @apply italic; }
+
+/* Horizontal rules — light Substack-style divider */
+.tiptap-body hr {
+  @apply border-none my-8;
+  border-top: 1px solid #e5e5e5;
+}
+
+/* Images and captions */
+.tiptap-body figure {
+  @apply my-8;
+}
+.tiptap-body figure img,
+.tiptap-body img {
+  @apply w-full rounded-sm;
+}
+.tiptap-body figcaption {
+  @apply text-xs text-neutral-400 mt-2 leading-snug;
+}
+
+/* Substack captioned-image-container */
+.tiptap-body .captioned-image-container {
+  @apply my-8;
+}
+.tiptap-body .captioned-image-container figure {
+  @apply my-0;
+}
+.tiptap-body .image-caption {
+  @apply text-xs text-neutral-400 mt-2 leading-snug;
+}
+
+/* Hide Substack subscribe widgets */
+.tiptap-body .subscription-widget-wrap,
+.tiptap-body .subscription-widget-wrap-editor,
+.tiptap-body .subscription-widget {
+  display: none !important;
+}
+
+/* Footnotes — hr before first, number + text inline */
+.tiptap-body .footnote:first-of-type {
+  border-top: 1px solid #e5e5e5;
+  padding-top: 1.5rem;
+  margin-top: 2rem;
+}
+.tiptap-body .footnote {
+  display: flex;
+  gap: 0.5rem;
+  @apply text-xs text-neutral-400 leading-snug mb-2;
+}
+.tiptap-body .footnote-number {
+  flex-shrink: 0;
+  @apply text-neutral-400 no-underline;
+}
+.tiptap-body .footnote-content p {
+  @apply mb-0;
+}
+
+/* Substack image wrappers — make images fill width */
+.tiptap-body .image2-inset,
+.tiptap-body .image2-inset picture,
+.tiptap-body .image2-inset img {
+  @apply block w-full;
+}
+.tiptap-body .image-link {
+  @apply block;
+}
 
 .tiptap-editor .ProseMirror {
   outline: none;

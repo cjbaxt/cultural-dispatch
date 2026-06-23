@@ -2,6 +2,11 @@
 import "../styles/global.css";
 import Nav from "../components/Nav";
 import EditorUnlock from "../components/EditorUnlock";
+import fs from "fs";
+import path from "path";
+
+const raw = fs.readFileSync(path.resolve("src/content/about.md"), "utf-8");
+const paragraphs = raw.split(/\n\n+/).map(p => p.trim()).filter(Boolean);
 ---
 
 <html lang="en">
@@ -21,9 +26,16 @@ import EditorUnlock from "../components/EditorUnlock";
     <EditorUnlock client:load />
     <Nav current="/about" client:load />
     <main class="max-w-2xl mx-auto px-4 pt-20 pb-24 md:pb-8">
-      <h1 class="font-serif text-3xl font-medium mb-6">About</h1>
-      <div class="prose prose-neutral text-neutral-700 leading-relaxed space-y-4">
-        <p>Writing about art, performance, and the experience of being in a room where something happens.</p>
+      <p class="font-serif text-2xl text-neutral-900 mt-4 mb-8">About</p>
+      <div class="space-y-5 text-sm text-neutral-700 leading-relaxed">
+        {paragraphs.map(p => p.includes("my ledger") ? (
+          <p>
+            {p.replace("my ledger.", "")}
+            <a href="https://cjbaxt.github.io/events-ledger/" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:text-neutral-500 transition-colors">my ledger</a>.
+          </p>
+        ) : (
+          <p>{p}</p>
+        ))}
       </div>
     </main>
   </body>
