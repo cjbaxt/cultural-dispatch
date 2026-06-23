@@ -4,12 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import text
 from app.db import engine, create_db_and_tables
 from app.api.posts import router as posts_router
+from app.api.publish import router as publish_router
 
 app = FastAPI(title="Claire Blog", version="0.1.0")
 
 _cors_origins = os.environ.get(
     "CORS_ORIGINS",
-    "http://localhost:4321,http://127.0.0.1:4321",
+    "http://localhost:4321,http://127.0.0.1:4321,http://localhost:4322,http://localhost:4323,http://localhost:4324,http://localhost:4325",
 ).split(",")
 
 app.add_middleware(
@@ -20,6 +21,7 @@ app.add_middleware(
 )
 
 app.include_router(posts_router)
+app.include_router(publish_router)
 
 
 @app.on_event("startup")
