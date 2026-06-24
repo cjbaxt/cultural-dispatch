@@ -81,6 +81,12 @@ export default function HomePage() {
 
   return (
     <div className="space-y-10">
+      {/* Masthead */}
+      <div className="pb-6 border-b border-neutral-200">
+        <p className="font-serif text-4xl sm:text-5xl tracking-tight text-neutral-900">cultural dispatch</p>
+        <p className="text-xs text-neutral-400 mt-2 tracking-wide">writing on arts and ideas</p>
+      </div>
+
       {/* Hero — first featured post */}
       <FeaturedCard post={first} large />
 
