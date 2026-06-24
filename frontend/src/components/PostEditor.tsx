@@ -294,8 +294,13 @@ export default function PostEditor({ post }: Props) {
       parent_slug: parentSlug || null,
     };
     try {
-      if (isEdit) {
-        await updatePost(post.slug, data);
+      const existingSlug = isEdit ? post.slug : savedSlugRef.current;
+      if (existingSlug) {
+        await updatePost(existingSlug, { ...data, slug: existingSlug });
+        if (!isEdit) {
+          window.location.href = url(`/post?slug=${existingSlug}`);
+          return;
+        }
       } else {
         const created = await createPost(data);
         window.location.href = url(`/post?slug=${created.slug}`);

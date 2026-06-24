@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetchPosts } from "../lib/api";
 import { url, assetUrl } from "../lib/base";
+import ForeverDraftBadge from "./ForeverDraftBadge";
 import { readingTime } from "../lib/readingTime";
 import type { Post } from "../types/post";
 
@@ -8,7 +9,6 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 
-const FOREVER_DRAFT_TOOLTIP = "This piece is still evolving — published as a work in progress, not a finished thought.";
 
 function FeaturedCard({ post, large }: { post: Post; large?: boolean }) {
   return (
@@ -28,14 +28,7 @@ function FeaturedCard({ post, large }: { post: Post; large?: boolean }) {
         )}
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <span className="text-[10px] uppercase tracking-widest text-neutral-400">{post.type}</span>
-          {post.is_forever_draft && (
-            <span
-              className="text-[10px] uppercase tracking-widest text-neutral-400 border border-neutral-200 rounded px-1.5 py-0.5 cursor-help"
-              title={FOREVER_DRAFT_TOOLTIP}
-            >
-              still thinking
-            </span>
-          )}
+          {post.is_forever_draft && <ForeverDraftBadge />}
           {post.parent_slug && (
             <span className="text-[10px] uppercase tracking-widest text-neutral-400">thread</span>
           )}

@@ -4,12 +4,12 @@ import { isEditor } from "../lib/editor";
 import { url, assetUrl } from "../lib/base";
 import { readingTime } from "../lib/readingTime";
 import type { Post } from "../types/post";
+import ForeverDraftBadge from "./ForeverDraftBadge";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 
-const FOREVER_DRAFT_TOOLTIP = "This piece is still evolving — published as a work in progress, not a finished thought.";
 
 export default function Archive() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -69,14 +69,7 @@ export default function Archive() {
                       {post.status === "draft" && (
                         <span className="text-[10px] uppercase tracking-widest text-amber-400">draft</span>
                       )}
-                      {post.is_forever_draft && (
-                        <span
-                          className="text-[10px] uppercase tracking-widest text-neutral-400 border border-neutral-200 rounded px-1.5 py-0.5 cursor-help"
-                          title={FOREVER_DRAFT_TOOLTIP}
-                        >
-                          still thinking
-                        </span>
-                      )}
+                      {post.is_forever_draft && <ForeverDraftBadge />}
                       {post.parent_slug && (
                         <span className="text-[10px] uppercase tracking-widest text-neutral-400">thread</span>
                       )}
