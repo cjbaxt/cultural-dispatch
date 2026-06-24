@@ -62,16 +62,6 @@ export default function Archive() {
             <li key={post.slug} className="py-6 group">
               <a href={url(`/post?slug=${post.slug}`)} className="block">
                 <div className="flex gap-6 items-start">
-                  {/* Lead image */}
-                  {post.lead_image && (
-                    <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-neutral-100">
-                      <img
-                        src={post.lead_image}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
                   <div className="flex-1 min-w-0">
                     {/* Type + status chips */}
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
@@ -101,6 +91,12 @@ export default function Archive() {
                       {formatDate(post.created_at)} · {readingTime(post.body)} min read
                     </p>
                   </div>
+                  {/* Lead image — right side */}
+                  {post.lead_image && (
+                    <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-neutral-100">
+                      <img src={post.lead_image} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )}
                 </div>
               </a>
               {editor && (
