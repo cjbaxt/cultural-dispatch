@@ -131,7 +131,7 @@ export default function PostDetail({ slug: slugProp }: { slug?: string }) {
       {/* Ledger ticket */}
       {post.related_event_urls.length > 0 && (
         <footer className="mt-12 pt-6 border-t border-neutral-100">
-          <p className="text-xs uppercase tracking-widest text-neutral-400 mb-3">Ledger ticket</p>
+          <p className="text-xs uppercase tracking-widest text-neutral-400 mb-3">Ledger ticket{post.related_event_urls.length > 1 ? "s" : ""}</p>
           <ul className="flex flex-wrap gap-2">
             {post.related_event_urls.map(id => {
               const event = ledgerEvents.find(e => e.id === id);
