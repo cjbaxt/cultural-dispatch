@@ -48,6 +48,53 @@ function ToolbarButton({ onClick, active, title, children }: {
   );
 }
 
+function extractImages(html: string): string[] {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+  return Array.from(doc.querySelectorAll("img"))
+    .map(img => img.src)
+    .filter(Boolean);
+}
+
+function LeadImagePicker({ body, selected, onSelect }: {
+  body: string;
+  selected: string;
+  onSelect: (src: string) => void;
+}) {
+  const [images, setImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    setImages(extractImages(body));
+  }, [body]);
+
+  if (images.length === 0) return null;
+
+  return (
+    <div>
+      <label className="block text-xs uppercase tracking-widest text-neutral-400 mb-1.5">Lead image</label>
+      <div className="flex flex-wrap gap-2">
+        {images.map(src => (
+          <button
+            key={src}
+            type="button"
+            onClick={() => onSelect(selected === src ? "" : src)}
+            className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors flex-shrink-0 ${
+              selected === src ? "border-neutral-900" : "border-transparent hover:border-neutral-300"
+            }`}
+          >
+            <img src={src} alt="" className="w-full h-full object-cover" />
+            {selected === src && (
+              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                <span className="text-white text-lg">✓</span>
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function PostEditor({ post }: Props) {
   const isEdit = !!post;
 
@@ -69,6 +116,7 @@ export default function PostEditor({ post }: Props) {
   const [ledgerEvents, setLedgerEvents] = useState<LedgerEvent[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const [bodyHTML, setBodyHTML] = useState(post?.body ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveStatus>("idle");
@@ -94,7 +142,10 @@ export default function PostEditor({ post }: Props) {
     editorProps: {
       attributes: { class: "tiptap-body min-h-[300px] focus:outline-none" },
     },
-    onUpdate: () => scheduleAutosave(),
+    onUpdate: ({ editor: e }) => {
+      scheduleAutosave();
+      setBodyHTML(getEditorHTML(e));
+    },
   });
 
   function addEvent(id: string) {
@@ -322,21 +373,6 @@ export default function PostEditor({ post }: Props) {
         />
       </div>
 
-      {/* Lead image */}
-      <div>
-        <label className="block text-xs uppercase tracking-widest text-neutral-400 mb-1.5">Lead image URL</label>
-        <input
-          type="url"
-          value={leadImage}
-          onChange={e => setLeadImage(e.target.value)}
-          placeholder="https://…"
-          className="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-neutral-400 transition-colors placeholder-neutral-300"
-        />
-        {leadImage && (
-          <img src={leadImage} alt="" className="mt-2 w-full max-h-48 object-cover rounded-lg" />
-        )}
-      </div>
-
       {/* Body editor */}
       <div>
         <label className="block text-xs uppercase tracking-widest text-neutral-400 mb-1.5">Body</label>
@@ -399,6 +435,9 @@ export default function PostEditor({ post }: Props) {
           </div>
         )}
       </div>
+
+      {/* Lead image picker */}
+      <LeadImagePicker body={bodyHTML} selected={leadImage} onSelect={setLeadImage} />
 
       {/* Thread: parent post */}
       <div>
