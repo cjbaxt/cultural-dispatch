@@ -52,7 +52,7 @@ export default function PostEditor({ post }: Props) {
   const isEdit = !!post;
 
   const [title, setTitle] = useState(post?.title ?? "");
-  const [type, setType] = useState<"essay" | "review">(post?.type ?? "essay");
+  const [type, setType] = useState<"essay" | "dispatch">(post?.type ?? "essay");
   const [status, setStatus] = useState<"draft" | "published">(post?.status ?? "draft");
   const [excerpt, setExcerpt] = useState(post?.excerpt ?? "");
   const [relatedUrls, setRelatedUrls] = useState<string[]>(post?.related_event_urls ?? []);
@@ -214,7 +214,7 @@ export default function PostEditor({ post }: Props) {
       {/* Meta row */}
       <div className="flex flex-wrap gap-4 items-center">
         <div className="flex gap-2">
-          {(["essay", "review"] as const).map(t => (
+          {(["essay", "dispatch"] as const).map(t => (
             <button
               key={t}
               type="button"
