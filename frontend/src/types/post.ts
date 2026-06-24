@@ -2,7 +2,7 @@ export interface Post {
   id: string;
   slug: string;
   title: string;
-  type: "essay" | "dispatch" | "movie review";
+  type: "essay" | "dispatch" | "film";
   status: "draft" | "published";
   excerpt: string | null;
   body: string;
