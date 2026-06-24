@@ -29,5 +29,45 @@ else
 fi
 
 echo ""
-echo "Done! GitHub Actions will deploy in a minute or two."
-echo "  https://github.com/cjbaxt/cultural-dispatch/actions"
+echo "▶ Waiting for GitHub Actions to start..."
+sleep 5
+
+RUN_ID=$(gh run list --repo cjbaxt/cultural-dispatch --branch main --workflow deploy.yml --limit 1 --json databaseId --jq '.[0].databaseId')
+if [ -z "$RUN_ID" ]; then
+  echo "  Could not find a workflow run — check https://github.com/cjbaxt/cultural-dispatch/actions"
+  exit 0
+fi
+
+echo "  Run ID: $RUN_ID"
+echo "  Watching: https://github.com/cjbaxt/cultural-dispatch/actions/runs/$RUN_ID"
+echo ""
+
+SECONDS_WAITED=0
+while true; do
+  STATUS=$(gh run view "$RUN_ID" --repo cjbaxt/cultural-dispatch --json status,conclusion --jq '[.status, .conclusion] | join(" ")')
+  STATE=$(echo "$STATUS" | awk '{print $1}')
+  CONCLUSION=$(echo "$STATUS" | awk '{print $2}')
+
+  if [ "$STATE" = "completed" ]; then
+    echo ""
+    if [ "$CONCLUSION" = "success" ]; then
+      echo "✓ Deployed successfully!"
+      echo "  https://cjbaxt.github.io/cultural-dispatch"
+    else
+      echo "✗ Deployment failed (conclusion: $CONCLUSION)"
+      echo "  https://github.com/cjbaxt/cultural-dispatch/actions/runs/$RUN_ID"
+    fi
+    break
+  fi
+
+  printf "  Still running... (%ds)\r" "$SECONDS_WAITED"
+  sleep 10
+  SECONDS_WAITED=$((SECONDS_WAITED + 10))
+
+  if [ "$SECONDS_WAITED" -gt 300 ]; then
+    echo ""
+    echo "  Timed out waiting — check manually:"
+    echo "  https://github.com/cjbaxt/cultural-dispatch/actions/runs/$RUN_ID"
+    break
+  fi
+fi
