@@ -11,7 +11,7 @@ export default function ForeverDraftBadge() {
         className="text-[10px] uppercase tracking-widest text-neutral-400 border border-neutral-200 rounded px-1.5 py-0.5 cursor-help"
         onMouseEnter={() => setVisible(true)}
         onMouseLeave={() => setVisible(false)}
-        onClick={() => setVisible(v => !v)}
+        onClick={e => { e.preventDefault(); e.stopPropagation(); setVisible(v => !v); }}
       >
         forever draft
       </span>
