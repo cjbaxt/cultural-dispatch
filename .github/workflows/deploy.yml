@@ -30,6 +30,23 @@ jobs:
         working-directory: frontend
         run: npm install --legacy-peer-deps
 
+      - name: Generate dark favicon.ico for production
+        working-directory: frontend
+        run: |
+          node --input-type=module << 'EOF'
+          import sharp from 'sharp';
+          import fs from 'fs';
+          const darkSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#1a1a1a"/><text x="16" y="24" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="22" fill="#f5f3ef" font-style="italic">cd</text></svg>`;
+          const png = await sharp(Buffer.from(darkSVG)).resize(32, 32).png().toBuffer();
+          const buf = Buffer.alloc(6 + 16 + png.length);
+          buf.writeUInt16LE(0,0); buf.writeUInt16LE(1,2); buf.writeUInt16LE(1,4);
+          buf.writeUInt8(32,6); buf.writeUInt8(32,7); buf.writeUInt8(0,8); buf.writeUInt8(0,9);
+          buf.writeUInt16LE(1,10); buf.writeUInt16LE(32,12);
+          buf.writeUInt32LE(png.length,14); buf.writeUInt32LE(22,18);
+          png.copy(buf,22);
+          fs.writeFileSync('public/favicon.ico', buf);
+          EOF
+
       - name: Build static site
         working-directory: frontend
         env:
