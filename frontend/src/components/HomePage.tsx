@@ -11,14 +11,48 @@ function formatDate(iso: string) {
 
 
 function FeaturedCard({ post, large }: { post: Post; large?: boolean }) {
+  if (!large) {
+    // Secondary cards: horizontal on mobile, vertical on desktop
+    return (
+      <a href={url(`/post?slug=${post.slug}`)} className="group block">
+        <article className="flex sm:flex-col gap-4 sm:gap-0 sm:h-full">
+          {post.lead_image && (
+            <div className="flex-shrink-0 w-24 h-20 sm:w-full sm:aspect-[4/3] sm:h-auto overflow-hidden rounded-lg sm:rounded-xl bg-neutral-100 sm:mb-4">
+              <img
+                src={assetUrl(post.lead_image)}
+                alt=""
+                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+              />
+            </div>
+          )}
+          <div className="flex flex-col flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1.5">
+              <span className="text-[10px] uppercase tracking-widest text-neutral-400">{post.type}</span>
+              {post.is_forever_draft && <ForeverDraftBadge />}
+              {post.parent_slug && <span className="text-[10px] uppercase tracking-widest text-neutral-400">thread</span>}
+            </div>
+            <h2 className="font-serif font-medium text-base sm:text-xl group-hover:text-neutral-500 transition-colors mb-1 sm:mb-2 line-clamp-2">
+              {post.title}
+            </h2>
+            {post.excerpt && (
+              <p className="hidden sm:block text-sm text-neutral-500 leading-relaxed line-clamp-3 mb-3">
+                {post.excerpt}
+              </p>
+            )}
+            <p className="text-xs text-neutral-300 mt-auto">
+              {formatDate(post.created_at)} · {readingTime(post.body)} min read
+            </p>
+          </div>
+        </article>
+      </a>
+    );
+  }
+
   return (
-    <a
-      href={url(`/post?slug=${post.slug}`)}
-      className="group block h-full"
-    >
+    <a href={url(`/post?slug=${post.slug}`)} className="group block h-full">
       <article className="h-full flex flex-col">
         {post.lead_image && (
-          <div className={`w-full overflow-hidden rounded-xl bg-neutral-100 mb-4 ${large ? "aspect-[16/9]" : "aspect-[4/3]"}`}>
+          <div className="w-full overflow-hidden rounded-xl bg-neutral-100 mb-4 aspect-[16/9]">
             <img
               src={assetUrl(post.lead_image)}
               alt=""
@@ -29,15 +63,13 @@ function FeaturedCard({ post, large }: { post: Post; large?: boolean }) {
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <span className="text-[10px] uppercase tracking-widest text-neutral-400">{post.type}</span>
           {post.is_forever_draft && <ForeverDraftBadge />}
-          {post.parent_slug && (
-            <span className="text-[10px] uppercase tracking-widest text-neutral-400">thread</span>
-          )}
+          {post.parent_slug && <span className="text-[10px] uppercase tracking-widest text-neutral-400">thread</span>}
         </div>
-        <h2 className={`font-serif font-medium group-hover:text-neutral-500 transition-colors mb-2 ${large ? "text-2xl sm:text-3xl" : "text-lg sm:text-xl"}`}>
+        <h2 className="font-serif font-medium text-2xl sm:text-3xl group-hover:text-neutral-500 transition-colors mb-2">
           {post.title}
         </h2>
         {post.excerpt && (
-          <p className={`text-neutral-500 leading-relaxed line-clamp-3 mb-3 ${large ? "text-sm sm:text-base" : "text-sm"}`}>
+          <p className="text-sm sm:text-base text-neutral-500 leading-relaxed line-clamp-3 mb-3">
             {post.excerpt}
           </p>
         )}
