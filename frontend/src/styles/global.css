@@ -118,7 +118,10 @@
 
 /* Images inserted via editor */
 .tiptap-editor .ProseMirror img {
-  @apply w-full rounded-sm my-4;
+  display: block;
+  max-width: 100%;
+  height: auto;
+  @apply rounded-sm my-4;
 }
 
 .tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {

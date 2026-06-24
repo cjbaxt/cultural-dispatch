@@ -3,10 +3,10 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
-import Image from "@tiptap/extension-image";
 import { createPost, updatePost, deletePost, fetchPosts } from "../lib/api";
 import { url } from "../lib/base";
 import { FigureExtension, getEditorHTML } from "../lib/figureExtension";
+import { ImageFigureExtension } from "../lib/imageFigureExtension";
 import { fetchLedgerEvents } from "../lib/ledger";
 import type { LedgerEvent } from "../lib/ledger";
 import type { Post } from "../types/post";
@@ -86,9 +86,9 @@ function LeadImagePicker({ body, selected, onSelect }: {
     if (!file) return;
     setUploading(true);
     try {
-      const url = await uploadImage(file);
-      onSelect(url);
-      setImages(prev => prev.includes(url) ? prev : [url, ...prev]);
+      const imgUrl = await uploadImage(file);
+      onSelect(imgUrl);
+      setImages(prev => prev.includes(imgUrl) ? prev : [imgUrl, ...prev]);
     } catch {
       alert("Upload failed");
     } finally {
@@ -175,7 +175,7 @@ export default function PostEditor({ post }: Props) {
       StarterKit,
       Link.configure({ openOnClick: false }),
       Placeholder.configure({ placeholder: "Start writing…" }),
-      Image.configure({ inline: false }),
+      ImageFigureExtension,
       FigureExtension,
     ],
     content: post?.body ?? "",
@@ -469,7 +469,7 @@ export default function PostEditor({ post }: Props) {
                     if (!file) return;
                     try {
                       const src = await uploadImage(file);
-                      editor.chain().focus().setImage({ src }).run();
+                      editor.chain().focus().insertContent({ type: "imageFigure", attrs: { src, caption: "" } }).run();
                     } catch {
                       alert("Upload failed");
                     }

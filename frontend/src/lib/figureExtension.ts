@@ -16,9 +16,12 @@ export const FigureExtension = Node.create({
     return [
       {
         tag: "figure",
-        getAttrs: (element) => ({
-          html: (element as HTMLElement).innerHTML,
-        }),
+        getAttrs: (element) => {
+          const el = element as HTMLElement;
+          // Only handle Substack figures; plain figures go to ImageFigureExtension
+          if (!el.querySelector(".image2-inset")) return false;
+          return { html: el.innerHTML };
+        },
       },
     ];
   },
