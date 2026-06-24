@@ -15,7 +15,7 @@ export default function Archive() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [editor, setEditor] = useState(() => isEditor());
-  const [filter, setFilter] = useState<"all" | "dispatch" | "essay">("all");
+  const [filter, setFilter] = useState<"all" | "dispatch" | "essay" | "movie review">("all");
 
   useEffect(() => {
     function sync() { setEditor(isEditor()); }
@@ -38,7 +38,7 @@ export default function Archive() {
     <div>
       {/* Filter */}
       <div className="flex gap-2 mb-8">
-        {(["all", "dispatch", "essay"] as const).map(f => (
+        {(["all", "dispatch", "essay", "movie review"] as const).map(f => (
           <button
             key={f}
             type="button"
