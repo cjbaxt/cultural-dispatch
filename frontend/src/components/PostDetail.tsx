@@ -3,7 +3,7 @@ import { fetchPost, fetchPosts } from "../lib/api";
 import { fetchLedgerEvents, ledgerEventUrl } from "../lib/ledger";
 import type { LedgerEvent } from "../lib/ledger";
 import { isEditor } from "../lib/editor";
-import { url, assetUrl } from "../lib/base";
+import { url, assetUrl, base } from "../lib/base";
 import ForeverDraftBadge from "./ForeverDraftBadge";
 import { readingTime } from "../lib/readingTime";
 import type { Post } from "../types/post";
@@ -97,7 +97,7 @@ export default function PostDetail({ slug: slugProp }: { slug?: string }) {
         </p>
       </header>
 
-      {post.lead_image && (
+      {post.lead_image && !post.body.includes(post.lead_image) && (
         <div className="w-full aspect-[16/9] overflow-hidden rounded-xl mb-8 bg-neutral-100">
           <img src={assetUrl(post.lead_image!)} alt="" className="w-full h-full object-cover" />
         </div>
@@ -105,7 +105,7 @@ export default function PostDetail({ slug: slugProp }: { slug?: string }) {
 
       <div
         className="tiptap-body"
-        dangerouslySetInnerHTML={{ __html: post.body }}
+        dangerouslySetInnerHTML={{ __html: post.body.replace(/src="\/images\//g, `src="${base}/images/`) }}
       />
 
       {/* Thread children */}
