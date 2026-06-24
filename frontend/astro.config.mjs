@@ -9,7 +9,7 @@ export default defineConfig({
   integrations: [react()],
   ...(isStatic ? {
     site: "https://cjbaxt.github.io",
-    base: "/cultural-dispatch",
+    base: "/cultural-dispatch/",
   } : {}),
   vite: {
     plugins: [tailwindcss()],
