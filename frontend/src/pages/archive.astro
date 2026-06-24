@@ -2,7 +2,7 @@
 import "../styles/global.css";
 import Nav from "../components/Nav";
 import EditorUnlock from "../components/EditorUnlock";
-import HomePage from "../components/HomePage";
+import Archive from "../components/Archive";
 ---
 
 <html lang="en">
@@ -10,7 +10,7 @@ import HomePage from "../components/HomePage";
     <meta charset="utf-8" />
     <link rel="icon" type="image/png" href={`${import.meta.env.BASE_URL}favicon.png`} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>cultural dispatch</title>
+    <title>archive · cultural dispatch</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,9 +20,9 @@ import HomePage from "../components/HomePage";
   </head>
   <body class="bg-white min-h-screen">
     <EditorUnlock client:load />
-    <Nav current="/" client:load />
+    <Nav current="/archive" client:load />
     <main class="max-w-2xl mx-auto px-4 pt-20 pb-24 md:pb-8">
-      <HomePage client:load />
+      <Archive client:load />
     </main>
   </body>
 </html>

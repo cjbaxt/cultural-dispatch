@@ -30,6 +30,10 @@ class PostIn(BaseModel):
     related_event_urls: list[str] = []
     slug: Optional[str] = None
     created_at: Optional[datetime] = None
+    lead_image: Optional[str] = None
+    is_forever_draft: bool = False
+    featured: bool = False
+    parent_slug: Optional[str] = None
 
 
 class PostOut(BaseModel):
@@ -41,6 +45,10 @@ class PostOut(BaseModel):
     excerpt: Optional[str]
     body: str
     related_event_urls: list[str]
+    lead_image: Optional[str]
+    is_forever_draft: bool
+    featured: bool
+    parent_slug: Optional[str]
     created_at: datetime
     updated_at: datetime
 
@@ -55,6 +63,10 @@ class PostOut(BaseModel):
             excerpt=p.excerpt,
             body=p.body,
             related_event_urls=json.loads(p.related_event_urls or "[]"),
+            lead_image=p.lead_image,
+            is_forever_draft=p.is_forever_draft or False,
+            featured=p.featured or False,
+            parent_slug=p.parent_slug,
             created_at=p.created_at,
             updated_at=p.updated_at,
         )
@@ -78,7 +90,6 @@ def list_posts(
 @router.post("", response_model=PostOut, status_code=201)
 def create_post(data: PostIn, session: Session = Depends(get_session)):
     slug = data.slug or slugify(data.title)
-    # Ensure unique slug
     existing = session.exec(select(Post).where(Post.slug == slug)).first()
     if existing:
         slug = f"{slug}-{int(datetime.now(timezone.utc).timestamp())}"
@@ -91,6 +102,10 @@ def create_post(data: PostIn, session: Session = Depends(get_session)):
         excerpt=data.excerpt,
         body=data.body,
         related_event_urls=json.dumps(data.related_event_urls),
+        lead_image=data.lead_image,
+        is_forever_draft=data.is_forever_draft,
+        featured=data.featured,
+        parent_slug=data.parent_slug,
         created_at=data.created_at or now,
         updated_at=data.created_at or now,
     )
@@ -119,6 +134,10 @@ def update_post(slug: str, data: PostIn, session: Session = Depends(get_session)
     post.excerpt = data.excerpt
     post.body = data.body
     post.related_event_urls = json.dumps(data.related_event_urls)
+    post.lead_image = data.lead_image
+    post.is_forever_draft = data.is_forever_draft
+    post.featured = data.featured
+    post.parent_slug = data.parent_slug
     post.updated_at = datetime.now(timezone.utc)
     if data.created_at:
         post.created_at = data.created_at

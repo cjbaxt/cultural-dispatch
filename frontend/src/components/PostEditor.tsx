@@ -4,7 +4,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@tiptap/extension-image";
-import { createPost, updatePost, deletePost } from "../lib/api";
+import { createPost, updatePost, deletePost, fetchPosts } from "../lib/api";
 import { url } from "../lib/base";
 import { FigureExtension, getEditorHTML } from "../lib/figureExtension";
 import { fetchLedgerEvents } from "../lib/ledger";
@@ -55,22 +55,32 @@ export default function PostEditor({ post }: Props) {
   const [type, setType] = useState<"essay" | "dispatch">(post?.type ?? "essay");
   const [status, setStatus] = useState<"draft" | "published">(post?.status ?? "draft");
   const [excerpt, setExcerpt] = useState(post?.excerpt ?? "");
+  const [leadImage, setLeadImage] = useState(post?.lead_image ?? "");
+  const [isForeverDraft, setIsForeverDraft] = useState(post?.is_forever_draft ?? false);
+  const [featured, setFeatured] = useState(post?.featured ?? false);
+  const [parentSlug, setParentSlug] = useState(post?.parent_slug ?? "");
+  const [parentSearch, setParentSearch] = useState("");
+  const [parentSuggestions, setParentSuggestions] = useState<Post[]>([]);
+  const [showParentSuggestions, setShowParentSuggestions] = useState(false);
+  const [allPosts, setAllPosts] = useState<Post[]>([]);
+
   const [relatedUrls, setRelatedUrls] = useState<string[]>(post?.related_event_urls ?? []);
   const [eventSearch, setEventSearch] = useState("");
   const [ledgerEvents, setLedgerEvents] = useState<LedgerEvent[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  useEffect(() => {
-    fetchLedgerEvents().then(setLedgerEvents).catch(() => {});
-  }, []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveStatus>("idle");
 
-  // Tracks the slug once a new post has been created, so autosave can PATCH thereafter
   const savedSlugRef = useRef<string | null>(post?.slug ?? null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    fetchLedgerEvents().then(setLedgerEvents).catch(() => {});
+    fetchPosts({}).then(posts => setAllPosts(posts.filter(p => p.slug !== post?.slug))).catch(() => {});
+  }, []);
 
   const editor = useEditor({
     extensions: [
@@ -82,17 +92,13 @@ export default function PostEditor({ post }: Props) {
     ],
     content: post?.body ?? "",
     editorProps: {
-      attributes: {
-        class: "tiptap-body min-h-[300px] focus:outline-none",
-      },
+      attributes: { class: "tiptap-body min-h-[300px] focus:outline-none" },
     },
     onUpdate: () => scheduleAutosave(),
   });
 
   function addEvent(id: string) {
-    if (!relatedUrls.includes(id)) {
-      setRelatedUrls(prev => [...prev, id]);
-    }
+    if (!relatedUrls.includes(id)) setRelatedUrls(prev => [...prev, id]);
     setEventSearch("");
     setShowSuggestions(false);
   }
@@ -108,24 +114,43 @@ export default function PostEditor({ post }: Props) {
       ).slice(0, 6)
     : [];
 
-  // Use refs so the autosave closure always sees current values without re-registering
+  useEffect(() => {
+    if (parentSearch.length > 1) {
+      setParentSuggestions(
+        allPosts.filter(p =>
+          p.title.toLowerCase().includes(parentSearch.toLowerCase())
+        ).slice(0, 6)
+      );
+    } else {
+      setParentSuggestions([]);
+    }
+  }, [parentSearch, allPosts]);
+
+  // Refs so autosave closure always sees current values
   const titleRef = useRef(title);
   const typeRef = useRef(type);
   const statusRef = useRef(status);
   const excerptRef = useRef(excerpt);
   const relatedUrlsRef = useRef(relatedUrls);
+  const leadImageRef = useRef(leadImage);
+  const isForeverDraftRef = useRef(isForeverDraft);
+  const featuredRef = useRef(featured);
+  const parentSlugRef = useRef(parentSlug);
   useEffect(() => { titleRef.current = title; }, [title]);
   useEffect(() => { typeRef.current = type; }, [type]);
   useEffect(() => { statusRef.current = status; }, [status]);
   useEffect(() => { excerptRef.current = excerpt; }, [excerpt]);
   useEffect(() => { relatedUrlsRef.current = relatedUrls; }, [relatedUrls]);
+  useEffect(() => { leadImageRef.current = leadImage; }, [leadImage]);
+  useEffect(() => { isForeverDraftRef.current = isForeverDraft; }, [isForeverDraft]);
+  useEffect(() => { featuredRef.current = featured; }, [featured]);
+  useEffect(() => { parentSlugRef.current = parentSlug; }, [parentSlug]);
 
   const scheduleAutosave = useCallback(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       const currentTitle = titleRef.current.trim();
       if (!currentTitle) return;
-
       setAutoSaveStatus("saving");
       const data = {
         title: currentTitle,
@@ -135,15 +160,17 @@ export default function PostEditor({ post }: Props) {
         body: editor ? getEditorHTML(editor) : "",
         related_event_urls: relatedUrlsRef.current,
         slug: savedSlugRef.current ?? slugify(currentTitle),
+        lead_image: leadImageRef.current || null,
+        is_forever_draft: isForeverDraftRef.current,
+        featured: featuredRef.current,
+        parent_slug: parentSlugRef.current || null,
       };
-
       try {
         if (savedSlugRef.current) {
           await updatePost(savedSlugRef.current, data);
         } else {
           const created = await createPost({ ...data, status: "draft" });
           savedSlugRef.current = created.slug;
-          // Update URL so a refresh opens the edit page, not a blank /add
           window.history.replaceState({}, "", url(`/edit?slug=${created.slug}`));
         }
         setAutoSaveStatus("saved");
@@ -155,23 +182,25 @@ export default function PostEditor({ post }: Props) {
     }, 2000);
   }, [editor]);
 
-  // Trigger autosave when fields change
-  useEffect(() => { scheduleAutosave(); }, [title, type, excerpt, relatedUrls]);
+  useEffect(() => { scheduleAutosave(); }, [title, type, excerpt, relatedUrls, leadImage, isForeverDraft, featured, parentSlug]);
 
   const handleSave = useCallback(async (targetStatus?: "draft" | "published") => {
     if (!title.trim()) { setError("Title is required."); return; }
     setSaving(true);
     setError(null);
     const finalStatus = targetStatus ?? status;
-    const body = editor ? getEditorHTML(editor) : "";
     const data = {
       title: title.trim(),
       type,
       status: finalStatus,
       excerpt: excerpt.trim() || null,
-      body,
+      body: editor ? getEditorHTML(editor) : "",
       related_event_urls: relatedUrls,
       slug: isEdit ? post.slug : slugify(title.trim()),
+      lead_image: leadImage || null,
+      is_forever_draft: isForeverDraft,
+      featured,
+      parent_slug: parentSlug || null,
     };
     try {
       if (isEdit) {
@@ -187,7 +216,7 @@ export default function PostEditor({ post }: Props) {
     } finally {
       setSaving(false);
     }
-  }, [title, type, status, excerpt, relatedUrls, editor, isEdit, post]);
+  }, [title, type, status, excerpt, relatedUrls, editor, isEdit, post, leadImage, isForeverDraft, featured, parentSlug]);
 
   const handleDelete = useCallback(async () => {
     if (!isEdit || status === "published") return;
@@ -199,6 +228,8 @@ export default function PostEditor({ post }: Props) {
       setError(e.message ?? "Delete failed.");
     }
   }, [isEdit, status, title, post]);
+
+  const parentPost = allPosts.find(p => p.slug === parentSlug);
 
   return (
     <div className="space-y-6">
@@ -229,6 +260,29 @@ export default function PostEditor({ post }: Props) {
             </button>
           ))}
         </div>
+
+        {/* Toggles */}
+        <div className="flex gap-3 items-center">
+          <label className="flex items-center gap-1.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={isForeverDraft}
+              onChange={e => setIsForeverDraft(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            <span className="text-xs text-neutral-500">Forever draft</span>
+          </label>
+          <label className="flex items-center gap-1.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={featured}
+              onChange={e => setFeatured(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            <span className="text-xs text-neutral-500">Featured</span>
+          </label>
+        </div>
+
         {isEdit && status === "draft" && (
           <button
             type="button"
@@ -238,16 +292,11 @@ export default function PostEditor({ post }: Props) {
             Delete draft
           </button>
         )}
+
         <div className="flex gap-3 ml-auto items-center">
-          {autoSaveStatus === "saving" && (
-            <span className="text-xs text-neutral-400">Saving…</span>
-          )}
-          {autoSaveStatus === "saved" && (
-            <span className="text-xs text-neutral-400">Saved</span>
-          )}
-          {autoSaveStatus === "error" && (
-            <span className="text-xs text-red-400">Autosave failed</span>
-          )}
+          {autoSaveStatus === "saving" && <span className="text-xs text-neutral-400">Saving…</span>}
+          {autoSaveStatus === "saved" && <span className="text-xs text-neutral-400">Saved</span>}
+          {autoSaveStatus === "error" && <span className="text-xs text-red-400">Autosave failed</span>}
           <button
             type="button"
             onClick={() => handleSave("published")}
@@ -273,12 +322,26 @@ export default function PostEditor({ post }: Props) {
         />
       </div>
 
+      {/* Lead image */}
+      <div>
+        <label className="block text-xs uppercase tracking-widest text-neutral-400 mb-1.5">Lead image URL</label>
+        <input
+          type="url"
+          value={leadImage}
+          onChange={e => setLeadImage(e.target.value)}
+          placeholder="https://…"
+          className="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-neutral-400 transition-colors placeholder-neutral-300"
+        />
+        {leadImage && (
+          <img src={leadImage} alt="" className="mt-2 w-full max-h-48 object-cover rounded-lg" />
+        )}
+      </div>
+
       {/* Body editor */}
       <div>
         <label className="block text-xs uppercase tracking-widest text-neutral-400 mb-1.5">Body</label>
         {editor && (
           <div className="border border-neutral-200 rounded-xl overflow-hidden">
-            {/* Toolbar */}
             <div className="flex flex-wrap gap-0.5 px-3 py-2 border-b border-neutral-100 bg-neutral-50">
               <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold">
                 <strong>B</strong>
@@ -335,6 +398,51 @@ export default function PostEditor({ post }: Props) {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Thread: parent post */}
+      <div>
+        <label className="block text-xs uppercase tracking-widest text-neutral-400 mb-1.5">Thread — parent post</label>
+        <div className="relative mb-2">
+          <input
+            type="text"
+            value={parentSlug ? (parentPost?.title ?? parentSlug) : parentSearch}
+            onChange={e => {
+              setParentSearch(e.target.value);
+              setParentSlug("");
+              setShowParentSuggestions(true);
+            }}
+            onFocus={() => setShowParentSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowParentSuggestions(false), 150)}
+            placeholder="Link to a parent post…"
+            className="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-neutral-400 transition-colors placeholder-neutral-300"
+          />
+          {parentSlug && (
+            <button
+              type="button"
+              onClick={() => { setParentSlug(""); setParentSearch(""); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700"
+            >
+              ×
+            </button>
+          )}
+          {showParentSuggestions && parentSuggestions.length > 0 && (
+            <ul className="absolute z-10 w-full mt-1 bg-white border border-neutral-200 rounded-lg shadow-sm overflow-hidden">
+              {parentSuggestions.map(p => (
+                <li key={p.slug}>
+                  <button
+                    type="button"
+                    onMouseDown={() => { setParentSlug(p.slug); setParentSearch(""); setShowParentSuggestions(false); }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-50 transition-colors"
+                  >
+                    <span className="text-neutral-800">{p.title}</span>
+                    <span className="text-neutral-400 ml-2 text-xs">{p.type}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       {/* Related events */}

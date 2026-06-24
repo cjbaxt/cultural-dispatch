@@ -3,7 +3,8 @@ import { isEditor } from "../lib/editor";
 import { url } from "../lib/base";
 
 const links = [
-  { path: "/", href: url("/"), label: "Writing" },
+  { path: "/", href: url("/"), label: "Home" },
+  { path: "/archive", href: url("/archive"), label: "Archive" },
   { path: "/about", href: url("/about"), label: "About" },
 ];
 

@@ -39,6 +39,10 @@ def dump_post(p: Post) -> dict:
         "excerpt": p.excerpt,
         "body": p.body,
         "related_event_urls": json.loads(p.related_event_urls or "[]"),
+        "lead_image": p.lead_image,
+        "is_forever_draft": p.is_forever_draft or False,
+        "featured": p.featured or False,
+        "parent_slug": p.parent_slug,
         "created_at": p.created_at.isoformat(),
         "updated_at": p.updated_at.isoformat(),
     }
