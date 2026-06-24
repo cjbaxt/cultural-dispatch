@@ -3,8 +3,10 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import Image from "@tiptap/extension-image";
 import { createPost, updatePost, deletePost } from "../lib/api";
 import { url } from "../lib/base";
+import { FigureExtension, getEditorHTML } from "../lib/figureExtension";
 import { fetchLedgerEvents } from "../lib/ledger";
 import type { LedgerEvent } from "../lib/ledger";
 import type { Post } from "../types/post";
@@ -75,6 +77,8 @@ export default function PostEditor({ post }: Props) {
       StarterKit,
       Link.configure({ openOnClick: false }),
       Placeholder.configure({ placeholder: "Start writing…" }),
+      Image.configure({ inline: false }),
+      FigureExtension,
     ],
     content: post?.body ?? "",
     editorProps: {
@@ -128,7 +132,7 @@ export default function PostEditor({ post }: Props) {
         type: typeRef.current,
         status: statusRef.current,
         excerpt: excerptRef.current.trim() || null,
-        body: editor?.getHTML() ?? "",
+        body: editor ? getEditorHTML(editor) : "",
         related_event_urls: relatedUrlsRef.current,
         slug: savedSlugRef.current ?? slugify(currentTitle),
       };
@@ -159,7 +163,7 @@ export default function PostEditor({ post }: Props) {
     setSaving(true);
     setError(null);
     const finalStatus = targetStatus ?? status;
-    const body = editor?.getHTML() ?? "";
+    const body = editor ? getEditorHTML(editor) : "";
     const data = {
       title: title.trim(),
       type,
@@ -313,6 +317,17 @@ export default function PostEditor({ post }: Props) {
                 title="Link"
               >
                 ↗
+              </ToolbarButton>
+              <span className="w-px bg-neutral-200 mx-1 self-stretch" />
+              <ToolbarButton
+                onClick={() => {
+                  const src = window.prompt("Image URL");
+                  if (src) editor.chain().focus().setImage({ src }).run();
+                }}
+                active={false}
+                title="Insert image"
+              >
+                ⌅
               </ToolbarButton>
             </div>
             <div className="tiptap-editor px-4 py-4">

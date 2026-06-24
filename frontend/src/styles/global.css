@@ -51,7 +51,7 @@
   @apply w-full rounded-sm;
 }
 .tiptap-body figcaption {
-  @apply text-xs text-neutral-400 mt-2 leading-snug;
+  @apply text-xs text-neutral-400 mt-2 leading-snug text-center;
 }
 
 /* Substack captioned-image-container */
@@ -62,7 +62,18 @@
   @apply my-0;
 }
 .tiptap-body .image-caption {
-  @apply text-xs text-neutral-400 mt-2 leading-snug;
+  @apply text-xs text-neutral-400 mt-2 leading-snug text-center;
+}
+
+/* Hide Substack image expand/restack overlay buttons */
+.tiptap-body .image-link-expand {
+  display: none !important;
+}
+
+/* Remove pointer cursor on image links — not interactive */
+.tiptap-body .image-link {
+  pointer-events: none;
+  cursor: default;
 }
 
 /* Hide Substack subscribe widgets */
@@ -103,6 +114,11 @@
 
 .tiptap-editor .ProseMirror {
   outline: none;
+}
+
+/* Images inserted via editor */
+.tiptap-editor .ProseMirror img {
+  @apply w-full rounded-sm my-4;
 }
 
 .tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
