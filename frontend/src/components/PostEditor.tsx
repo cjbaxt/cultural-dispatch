@@ -48,6 +48,16 @@ function ToolbarButton({ onClick, active, title, children }: {
   );
 }
 
+async function uploadImage(file: File): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch("/api/upload", { method: "POST", body: form });
+  if (!res.ok) throw new Error("Upload failed");
+  const { url } = await res.json();
+  // In dev the URL is relative (/images/…); works as-is with Vite proxy
+  return url;
+}
+
 function extractImages(html: string): string[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
@@ -62,17 +72,47 @@ function LeadImagePicker({ body, selected, onSelect }: {
   onSelect: (src: string) => void;
 }) {
   const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setImages(extractImages(body));
-  }, [body]);
+    const imgs = extractImages(body);
+    // Also include selected if it came from an upload (not in body)
+    setImages(selected && !imgs.includes(selected) ? [selected, ...imgs] : imgs);
+  }, [body, selected]);
 
-  if (images.length === 0) return null;
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadImage(file);
+      onSelect(url);
+      setImages(prev => prev.includes(url) ? prev : [url, ...prev]);
+    } catch {
+      alert("Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
 
   return (
     <div>
       <label className="block text-xs uppercase tracking-widest text-neutral-400 mb-1.5">Lead image</label>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-start">
+        {/* Upload button */}
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="w-20 h-20 rounded-lg border-2 border-dashed border-neutral-200 hover:border-neutral-400 transition-colors flex flex-col items-center justify-center gap-1 text-neutral-400 hover:text-neutral-600 disabled:opacity-40 flex-shrink-0"
+        >
+          <span className="text-xl leading-none">{uploading ? "…" : "+"}</span>
+          <span className="text-[9px] uppercase tracking-wider">Upload</span>
+        </button>
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+
         {images.map(src => (
           <button
             key={src}
@@ -418,16 +458,25 @@ export default function PostEditor({ post }: Props) {
                 ↗
               </ToolbarButton>
               <span className="w-px bg-neutral-200 mx-1 self-stretch" />
-              <ToolbarButton
-                onClick={() => {
-                  const src = window.prompt("Image URL");
-                  if (src) editor.chain().focus().setImage({ src }).run();
-                }}
-                active={false}
-                title="Insert image"
-              >
+              <label className="px-2 py-1 text-sm rounded transition-colors text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 cursor-pointer" title="Insert image">
                 ⌅
-              </ToolbarButton>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async e => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const src = await uploadImage(file);
+                      editor.chain().focus().setImage({ src }).run();
+                    } catch {
+                      alert("Upload failed");
+                    }
+                    e.target.value = "";
+                  }}
+                />
+              </label>
             </div>
             <div className="tiptap-editor px-4 py-4">
               <EditorContent editor={editor} />

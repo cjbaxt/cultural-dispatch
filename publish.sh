@@ -6,8 +6,8 @@ source backend/.venv/bin/activate && python3 scripts/dump_to_json.py
 echo "✓ Database dumped"
 
 echo ""
-echo "▶ Staging data files..."
-git add frontend/public/data
+echo "▶ Staging data files and images..."
+git add frontend/public/data frontend/public/images
 CHANGED=$(git diff --cached --name-only | wc -l | tr -d ' ')
 echo "  $CHANGED file(s) staged"
 

@@ -5,6 +5,7 @@ from sqlmodel import text
 from app.db import engine, create_db_and_tables
 from app.api.posts import router as posts_router
 from app.api.publish import router as publish_router
+from app.api.upload import router as upload_router
 
 app = FastAPI(title="Claire Blog", version="0.1.0")
 
@@ -22,6 +23,7 @@ app.add_middleware(
 
 app.include_router(posts_router)
 app.include_router(publish_router)
+app.include_router(upload_router)
 
 
 @app.on_event("startup")
