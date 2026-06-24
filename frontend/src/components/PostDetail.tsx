@@ -3,7 +3,7 @@ import { fetchPost, fetchPosts } from "../lib/api";
 import { fetchLedgerEvents, ledgerEventUrl } from "../lib/ledger";
 import type { LedgerEvent } from "../lib/ledger";
 import { isEditor } from "../lib/editor";
-import { url } from "../lib/base";
+import { url, assetUrl } from "../lib/base";
 import { readingTime } from "../lib/readingTime";
 import type { Post } from "../types/post";
 
@@ -106,7 +106,7 @@ export default function PostDetail({ slug: slugProp }: { slug?: string }) {
 
       {post.lead_image && (
         <div className="w-full aspect-[16/9] overflow-hidden rounded-xl mb-8 bg-neutral-100">
-          <img src={url(post.lead_image!)} alt="" className="w-full h-full object-cover" />
+          <img src={assetUrl(post.lead_image!)} alt="" className="w-full h-full object-cover" />
         </div>
       )}
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetchPosts, deletePost } from "../lib/api";
 import { isEditor } from "../lib/editor";
-import { url } from "../lib/base";
+import { url, assetUrl } from "../lib/base";
 import { readingTime } from "../lib/readingTime";
 import type { Post } from "../types/post";
 
@@ -94,7 +94,7 @@ export default function Archive() {
                   {/* Lead image — right side */}
                   {post.lead_image && (
                     <div className="flex-shrink-0 w-28 h-20 sm:w-36 sm:h-24 rounded-lg overflow-hidden bg-neutral-100">
-                      <img src={url(post.lead_image)} alt="" className="w-full h-full object-cover" />
+                      <img src={assetUrl(post.lead_image)} alt="" className="w-full h-full object-cover" />
                     </div>
                   )}
                 </div>
