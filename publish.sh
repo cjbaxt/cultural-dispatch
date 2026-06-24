@@ -70,4 +70,4 @@ while true; do
     echo "  https://github.com/cjbaxt/cultural-dispatch/actions/runs/$RUN_ID"
     break
   fi
-fi
+done

@@ -20,7 +20,7 @@ function FeaturedCard({ post, large }: { post: Post; large?: boolean }) {
         {post.lead_image && (
           <div className={`w-full overflow-hidden rounded-xl bg-neutral-100 mb-4 ${large ? "aspect-[16/9]" : "aspect-[4/3]"}`}>
             <img
-              src={post.lead_image}
+              src={url(post.lead_image)}
               alt=""
               className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
             />

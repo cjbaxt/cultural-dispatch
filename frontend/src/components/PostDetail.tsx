@@ -106,7 +106,7 @@ export default function PostDetail({ slug: slugProp }: { slug?: string }) {
 
       {post.lead_image && (
         <div className="w-full aspect-[16/9] overflow-hidden rounded-xl mb-8 bg-neutral-100">
-          <img src={post.lead_image} alt="" className="w-full h-full object-cover" />
+          <img src={url(post.lead_image!)} alt="" className="w-full h-full object-cover" />
         </div>
       )}
 

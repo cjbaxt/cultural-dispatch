@@ -94,7 +94,7 @@ export default function Archive() {
                   {/* Lead image — right side */}
                   {post.lead_image && (
                     <div className="flex-shrink-0 w-28 h-20 sm:w-36 sm:h-24 rounded-lg overflow-hidden bg-neutral-100">
-                      <img src={post.lead_image} alt="" className="w-full h-full object-cover" />
+                      <img src={url(post.lead_image)} alt="" className="w-full h-full object-cover" />
                     </div>
                   )}
                 </div>
