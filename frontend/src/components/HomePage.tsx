@@ -40,7 +40,7 @@ function FeaturedCard({ post, large }: { post: Post; large?: boolean }) {
               </p>
             )}
             <p className="text-xs text-neutral-300 mt-auto">
-              {formatDate(post.created_at)} · {readingTime(post.body)} min read · <a href={url("/about-claire")} onClick={e => e.stopPropagation()} className="hover:text-neutral-500 transition-colors">Claire</a>
+              {formatDate(post.created_at)} · {readingTime(post.body)} min read · Claire
             </p>
           </div>
         </article>
@@ -74,7 +74,7 @@ function FeaturedCard({ post, large }: { post: Post; large?: boolean }) {
           </p>
         )}
         <p className="text-xs text-neutral-300 mt-auto">
-          {formatDate(post.created_at)} · {readingTime(post.body)} min read · <a href={url("/about-claire")} onClick={e => e.stopPropagation()} className="hover:text-neutral-500 transition-colors">Claire</a>
+          {formatDate(post.created_at)} · {readingTime(post.body)} min read · Claire
         </p>
       </article>
     </a>
