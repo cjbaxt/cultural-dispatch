@@ -81,7 +81,7 @@ export default function Archive() {
                       <p className="text-sm text-neutral-500 leading-relaxed line-clamp-2 mb-2">{post.excerpt}</p>
                     )}
                     <p className="text-xs text-neutral-300">
-                      {formatDate(post.created_at)} · {readingTime(post.body)} min read
+                      {formatDate(post.created_at)} · {readingTime(post.body)} min read · <a href={url("/about-claire")} onClick={e => e.stopPropagation()} className="hover:text-neutral-500 transition-colors">Claire</a>
                     </p>
                   </div>
                   {/* Lead image — right side */}

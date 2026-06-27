@@ -93,7 +93,7 @@ export default function PostDetail({ slug: slugProp }: { slug?: string }) {
           <p className="text-neutral-500 leading-relaxed mb-4">{post.excerpt}</p>
         )}
         <p className="text-xs text-neutral-300">
-          {formatDate(post.created_at)} · {mins} min read
+          {formatDate(post.created_at)} · {mins} min read · <a href={url("/about-claire")} className="hover:text-neutral-500 transition-colors">Claire</a>
         </p>
       </header>
 
