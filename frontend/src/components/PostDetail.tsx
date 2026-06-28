@@ -97,7 +97,7 @@ export default function PostDetail({ slug: slugProp }: { slug?: string }) {
         </p>
       </header>
 
-      {post.lead_image && !post.body.includes(post.lead_image) && (
+      {post.lead_image && !post.body.includes(post.lead_image) && !post.body.includes(post.lead_image.replace(/^https?:\/\/[^/]+/, "")) && (
         <div className="w-full aspect-[16/9] overflow-hidden rounded-xl mb-8 bg-neutral-100">
           <img src={assetUrl(post.lead_image!)} alt="" className="w-full h-full object-cover" />
         </div>

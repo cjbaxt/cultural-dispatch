@@ -62,7 +62,7 @@ function extractImages(html: string): string[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
   return Array.from(doc.querySelectorAll("img"))
-    .map(img => img.src)
+    .map(img => img.getAttribute("src") ?? "")
     .filter(Boolean);
 }
 
