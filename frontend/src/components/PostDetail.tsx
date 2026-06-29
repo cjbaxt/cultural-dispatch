@@ -62,7 +62,7 @@ export default function PostDetail({ slug: slugProp }: { slug?: string }) {
         {/* Parent thread link */}
         {parentPost && (
           <a
-            href={url(`/post?slug=${parentPost.slug}`)}
+            href={url(`/post/${parentPost.slug}/`)}
             className="inline-flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-600 transition-colors mb-4"
           >
             ← {parentPost.title}
@@ -116,7 +116,7 @@ export default function PostDetail({ slug: slugProp }: { slug?: string }) {
             {threads.map(t => (
               <li key={t.slug}>
                 <a
-                  href={url(`/post?slug=${t.slug}`)}
+                  href={url(`/post/${t.slug}/`)}
                   className="group flex items-baseline gap-3 hover:text-neutral-500 transition-colors"
                 >
                   <span className="font-serif text-base font-medium group-hover:text-neutral-500">{t.title}</span>

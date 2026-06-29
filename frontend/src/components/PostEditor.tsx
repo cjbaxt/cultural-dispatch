@@ -298,12 +298,12 @@ export default function PostEditor({ post }: Props) {
       if (existingSlug) {
         await updatePost(existingSlug, { ...data, slug: existingSlug });
         if (!isEdit) {
-          window.location.href = url(`/post?slug=${existingSlug}`);
+          window.location.href = url(`/post/${existingSlug}/`);
           return;
         }
       } else {
         const created = await createPost(data);
-        window.location.href = url(`/post?slug=${created.slug}`);
+        window.location.href = url(`/post/${created.slug}/`);
         return;
       }
       setStatus(finalStatus);

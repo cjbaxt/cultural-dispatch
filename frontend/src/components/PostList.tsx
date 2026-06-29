@@ -40,7 +40,7 @@ export default function PostList() {
     <ul className="divide-y divide-neutral-100">
       {posts.map(post => (
         <li key={post.slug} className="py-6 group">
-          <a href={url(`/post?slug=${post.slug}`)} className="block">
+          <a href={url(`/post/${post.slug}/`)} className="block">
             <div className="flex items-baseline gap-3 mb-1.5">
               <span className="text-[10px] uppercase tracking-widest text-neutral-400">{post.type}</span>
               {post.status === "draft" && (

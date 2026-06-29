@@ -1,0 +1,87 @@
+---
+import "../../styles/global.css";
+import Nav from "../../components/Nav";
+import EditorUnlock from "../../components/EditorUnlock";
+import PostDetail from "../../components/PostDetail";
+import { readFileSync } from "fs";
+import { resolve } from "path";
+
+export async function getStaticPaths() {
+  if (import.meta.env.PUBLIC_STATIC_DATA === "true") {
+    const postsPath = resolve("public/data/posts.json");
+    const posts = JSON.parse(readFileSync(postsPath, "utf-8"));
+    return posts.map((post: any) => ({
+      params: { slug: post.slug },
+      props: { post },
+    }));
+  }
+  // Dev mode: fetch from local backend so routes resolve
+  try {
+    const port = process.env.BACKEND_PORT ?? "8000";
+    const res = await fetch(`http://localhost:${port}/api/posts`);
+    const posts: any[] = await res.json();
+    return posts.map((post) => ({
+      params: { slug: post.slug },
+      props: { post },
+    }));
+  } catch {
+    return [];
+  }
+}
+
+const { slug } = Astro.params;
+const { post } = Astro.props as { post?: any };
+
+const isStatic = import.meta.env.PUBLIC_STATIC_DATA === "true";
+const siteUrl = "https://cjbaxt.github.io/cultural-dispatch";
+
+// OG values — populated at build time in static mode
+const ogTitle = post?.title ? `${post.title} — Cultural Dispatch` : "Cultural Dispatch";
+const ogDescription = post?.excerpt ?? "Writing on arts and ideas.";
+const ogImage = post?.lead_image
+  ? post.lead_image.startsWith("http")
+    ? post.lead_image
+    : `${siteUrl}${post.lead_image}`
+  : null;
+const ogUrl = `${siteUrl}/post/${slug}/`;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/png" href={`${import.meta.env.BASE_URL}${isStatic ? "favicon.png" : "favicon-local.png"}`} />
+    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}${isStatic ? "favicon.svg" : "favicon-local.svg"}`} />
+    <link rel="alternate icon" type="image/x-icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
+    <link rel="apple-touch-icon" href={`${import.meta.env.BASE_URL}apple-touch-icon.png`} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{ogTitle}</title>
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:url" content={ogUrl} />
+    <meta property="og:site_name" content="Cultural Dispatch" />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={ogTitle} />
+    <meta name="twitter:description" content={ogDescription} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-white min-h-screen">
+    <EditorUnlock client:load />
+    <Nav current="" client:load />
+    <main class="max-w-2xl mx-auto px-4 pt-20 pb-24 md:pb-8">
+      <PostDetail slug={slug} client:only="react" />
+    </main>
+  </body>
+</html>

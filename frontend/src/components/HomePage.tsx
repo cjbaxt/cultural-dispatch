@@ -14,7 +14,7 @@ function FeaturedCard({ post, large }: { post: Post; large?: boolean }) {
   if (!large) {
     // Secondary cards: horizontal on mobile, vertical on desktop
     return (
-      <a href={url(`/post?slug=${post.slug}`)} className="group block">
+      <a href={url(`/post/${post.slug}/`)} className="group block">
         <article className="flex sm:flex-col gap-4 sm:gap-0 sm:h-full">
           {post.lead_image && (
             <div className="flex-shrink-0 w-24 h-20 sm:w-full sm:aspect-[4/3] sm:h-auto overflow-hidden rounded-lg sm:rounded-xl bg-neutral-100 sm:mb-4">
@@ -49,7 +49,7 @@ function FeaturedCard({ post, large }: { post: Post; large?: boolean }) {
   }
 
   return (
-    <a href={url(`/post?slug=${post.slug}`)} className="group block h-full">
+    <a href={url(`/post/${post.slug}/`)} className="group block h-full">
       <article className="h-full flex flex-col">
         {post.lead_image && (
           <div className="w-full overflow-hidden rounded-xl bg-neutral-100 mb-4 aspect-[16/9]">

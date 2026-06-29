@@ -60,7 +60,7 @@ export default function Archive() {
         <ul className="divide-y divide-neutral-100">
           {filtered.map(post => (
             <li key={post.slug} className="py-6 group">
-              <a href={url(`/post?slug=${post.slug}`)} className="block">
+              <a href={url(`/post/${post.slug}/`)} className="block">
                 <div className="flex gap-6 items-start">
                   <div className="flex-1 min-w-0">
                     {/* Type + status chips */}
