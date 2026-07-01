@@ -1,6 +1,6 @@
 One of my goals in 2026 was to write something. Anything. Just to write.
 
-I chose to write about something I've loved for a long time -- live performances. Going to events often stirs a deep feeling in me. So here I am, writing about what I experienced, and the quiet ways culture impacts my inner world. 
+Going to live performances often stirs a deep feeling in me. So here I am, writing about what I experienced, and the quiet ways culture impacts my inner world. 
 
 Along the way, I've discovered something I didn't expect. Writing hasn't just helped me remember and hold on to these moments. It has helped me process complex thoughts and think more clearly. About more than just art.
 
