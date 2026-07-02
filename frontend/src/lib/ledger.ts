@@ -6,8 +6,8 @@ export interface LedgerEvent {
   type: string;
 }
 
-const LEDGER_EVENTS_URL = "https://cjbaxt.github.io/events-ledger/data/events.json";
-const LEDGER_EVENT_URL = (id: string) => `https://cjbaxt.github.io/events-ledger/events/${id}`;
+const LEDGER_EVENTS_URL = "https://claireheaded.com/events-ledger/data/events.json";
+const LEDGER_EVENT_URL = (id: string) => `https://claireheaded.com/events-ledger/events/${id}`;
 
 let _cache: LedgerEvent[] | null = null;
 

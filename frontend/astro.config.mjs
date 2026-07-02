@@ -8,7 +8,7 @@ const isStatic = process.env.PUBLIC_STATIC_DATA === "true";
 export default defineConfig({
   integrations: [react()],
   ...(isStatic ? {
-    site: "https://cjbaxt.github.io",
+    site: "https://claireheaded.com",
     base: "/cultural-dispatch/",
   } : {}),
   vite: {

@@ -52,7 +52,7 @@ while true; do
     echo ""
     if [ "$CONCLUSION" = "success" ]; then
       echo "✓ Deployed successfully!"
-      echo "  https://cjbaxt.github.io/cultural-dispatch"
+      echo "  https://claireheaded.com"
     else
       echo "✗ Deployment failed (conclusion: $CONCLUSION)"
       echo "  https://github.com/cjbaxt/cultural-dispatch/actions/runs/$RUN_ID"
