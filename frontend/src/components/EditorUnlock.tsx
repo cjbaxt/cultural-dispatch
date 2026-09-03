@@ -25,7 +25,7 @@ export default function EditorUnlock() {
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === "e") {
+      if (e.key === "e" && !isEditor()) {
         const now = Date.now();
         if (now - lastE.current < 500) {
           setOpen(true);

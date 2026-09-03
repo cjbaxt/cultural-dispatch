@@ -157,7 +157,11 @@ export default function PostEditor({ post }: Props) {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [bodyHTML, setBodyHTML] = useState(post?.body ?? "");
+  const [createdAt, setCreatedAt] = useState(
+    post?.created_at ? post.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10)
+  );
   const [saving, setSaving] = useState(false);
+  const [savedFeedback, setSavedFeedback] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveStatus>("idle");
 
@@ -292,6 +296,7 @@ export default function PostEditor({ post }: Props) {
       is_forever_draft: isForeverDraft,
       featured,
       parent_slug: parentSlug || null,
+      created_at: createdAt ? new Date(createdAt).toISOString() : undefined,
     };
     try {
       const existingSlug = isEdit ? post.slug : savedSlugRef.current;
@@ -307,6 +312,8 @@ export default function PostEditor({ post }: Props) {
         return;
       }
       setStatus(finalStatus);
+      setSavedFeedback(true);
+      setTimeout(() => setSavedFeedback(false), 2500);
     } catch (e: any) {
       setError(e.message ?? "Save failed.");
     } finally {
@@ -393,6 +400,7 @@ export default function PostEditor({ post }: Props) {
           {autoSaveStatus === "saving" && <span className="text-xs text-neutral-400">Saving…</span>}
           {autoSaveStatus === "saved" && <span className="text-xs text-neutral-400">Saved</span>}
           {autoSaveStatus === "error" && <span className="text-xs text-red-400">Autosave failed</span>}
+          {savedFeedback && <span className="text-xs text-neutral-400">Saved ✓</span>}
           <button
             type="button"
             onClick={() => handleSave("published")}
@@ -415,6 +423,17 @@ export default function PostEditor({ post }: Props) {
           rows={2}
           placeholder="Shown below the title…"
           className="w-full text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-neutral-400 transition-colors resize-none placeholder-neutral-300"
+        />
+      </div>
+
+      {/* Date */}
+      <div>
+        <label className="block text-xs uppercase tracking-widest text-neutral-400 mb-1.5">Date</label>
+        <input
+          type="date"
+          value={createdAt}
+          onChange={e => setCreatedAt(e.target.value)}
+          className="text-sm border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-neutral-400 transition-colors"
         />
       </div>
 
