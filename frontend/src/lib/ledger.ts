@@ -6,16 +6,18 @@ export interface LedgerEvent {
   type: string;
 }
 
-const LEDGER_EVENTS_URL = "https://claireheaded.com/events-ledger/data/events.json";
-const LEDGER_EVENT_URL = (id: string) => `https://claireheaded.com/events-ledger/events/${id}`;
+const LEDGER_API_URL = "https://ledger.claireheaded.com/api/events?limit=500";
+const LEDGER_EVENT_URL = (id: string) => `https://ledger.claireheaded.com?token=ohjill&event=${id}`;
 
 let _cache: LedgerEvent[] | null = null;
 
 export async function fetchLedgerEvents(): Promise<LedgerEvent[]> {
   if (_cache) return _cache;
-  const res = await fetch(LEDGER_EVENTS_URL);
+  const res = await fetch(LEDGER_API_URL);
   if (!res.ok) throw new Error("Failed to fetch ledger events");
-  _cache = await res.json();
+  const data = await res.json();
+  // API may return { events: [...] } or a plain array
+  _cache = Array.isArray(data) ? data : (data.events ?? data.data ?? []);
   return _cache!;
 }
 

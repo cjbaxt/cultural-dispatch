@@ -34,7 +34,7 @@ const paragraphs = raw.split(/\n\n+/).map(p => p.trim()).filter(Boolean);
         {paragraphs.map(p => p.includes("my ledger") ? (
           <p>
             {p.replace("my ledger.", "")}
-            <a href="https://claireheaded.com/events-ledger/" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:text-neutral-500 transition-colors">my ledger</a>.
+            <a href="https://ledger.claireheaded.com?token=ohjill" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:text-neutral-500 transition-colors">my ledger</a>.
           </p>
         ) : (
           <p>{p}</p>

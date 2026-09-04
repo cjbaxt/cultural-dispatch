@@ -49,7 +49,7 @@ export async function createPost(data: Omit<Post, "id" | "created_at" | "updated
   return res.json();
 }
 
-export async function updatePost(slug: string, data: Omit<Post, "id" | "created_at" | "updated_at">): Promise<Post> {
+export async function updatePost(slug: string, data: Omit<Post, "id" | "updated_at"> & { created_at?: string }): Promise<Post> {
   const res = await fetch(`/api/posts/${slug}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },

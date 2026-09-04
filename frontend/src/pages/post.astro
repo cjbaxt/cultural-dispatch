@@ -1,14 +1,30 @@
 ---
-// Legacy redirect: /post?slug=my-post → /post/my-post/
+// Dev mode post view — loads PostDetail client-side via API proxy.
+// In static builds this page is unused; /post/[slug]/ handles it.
+import "../styles/global.css";
+import Nav from "../components/Nav";
+import EditorUnlock from "../components/EditorUnlock";
+import PostDetail from "../components/PostDetail";
 ---
-<html>
+
+<html lang="en">
   <head>
-    <script>
-      const slug = new URLSearchParams(window.location.search).get("slug");
-      if (slug) {
-        window.location.replace(window.location.pathname.replace(/\/post$/, "") + "/post/" + slug + "/");
-      }
-    </script>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="/favicon-local.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cultural Dispatch</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
   </head>
-  <body></body>
+  <body class="bg-white min-h-screen">
+    <EditorUnlock client:load />
+    <Nav current="" client:load />
+    <main class="max-w-2xl mx-auto px-4 pt-20 pb-24 md:pb-8">
+      <PostDetail client:only="react" />
+    </main>
+  </body>
 </html>

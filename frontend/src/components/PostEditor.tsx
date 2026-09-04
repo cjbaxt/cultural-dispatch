@@ -303,7 +303,7 @@ export default function PostEditor({ post }: Props) {
       if (existingSlug) {
         await updatePost(existingSlug, { ...data, slug: existingSlug });
         if (!isEdit) {
-          window.location.href = url(`/post/${existingSlug}/`);
+          window.location.href = url(import.meta.env.PUBLIC_STATIC_DATA === "true" ? `/post/${existingSlug}/` : `/post?slug=${existingSlug}`);
           return;
         }
       } else {
@@ -319,7 +319,7 @@ export default function PostEditor({ post }: Props) {
     } finally {
       setSaving(false);
     }
-  }, [title, type, status, excerpt, relatedUrls, editor, isEdit, post, leadImage, isForeverDraft, featured, parentSlug]);
+  }, [title, type, status, excerpt, relatedUrls, editor, isEdit, post, leadImage, isForeverDraft, featured, parentSlug, createdAt]);
 
   const handleDelete = useCallback(async () => {
     if (!isEdit || status === "published") return;

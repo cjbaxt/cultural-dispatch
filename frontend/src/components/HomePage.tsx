@@ -112,6 +112,11 @@ export default function HomePage() {
         <p className="text-xs text-neutral-400 mt-2 tracking-wide">writing on arts and ideas</p>
       </div>
 
+      {/* Intro line */}
+      <p className="text-xs text-neutral-400 -mt-4">
+        Some favourites. For everything else, see the <a href={url("/archive")} className="underline underline-offset-2 hover:text-neutral-600 transition-colors">archive</a>.
+      </p>
+
       {/* Hero — first featured post */}
       <FeaturedCard post={first} large />
 
